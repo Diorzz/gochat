@@ -30,10 +30,6 @@ func (sp *ServerPeer) Read() {
 		if err != nil {
 			log.Println(err)
 		}
+		log.Println(msg)
 	}
-}
-
-// Init 初始化ServerPeer
-func (sp *ServerPeer) Init(localIP string) {
-
 }

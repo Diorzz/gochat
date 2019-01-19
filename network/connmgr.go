@@ -15,6 +15,15 @@ type ConnMgr struct {
 	ServerPeers map[string]*ServerPeer
 }
 
+func NewConnManager(ip string) *ConnMgr {
+	sps := make(map[string]*ServerPeer)
+	cm := &ConnMgr{
+		LocalIP:     ip,
+		ServerPeers: sps,
+	}
+	return cm
+}
+
 func (connMgr *ConnMgr) Start() {
 	err := connMgr.listen(connMgr.LocalIP)
 	if err != nil {
@@ -69,14 +78,15 @@ func (connMgr *ConnMgr) acceptConn() {
 		log.Printf("成功建立连接：%s", conn.RemoteAddr().String())
 		ip := conn.RemoteAddr().String()
 		peer := &Peer{ip, conn}
+		sp := NewServerPeer(peer)
+		connMgr.ServerPeers[ip] = sp
 		log.Printf("创建一个peer, peer ip:%s", peer.targetIP)
-		connMgr.Peers[ip] = peer
-		go peer.RecvMsg()
+		go sp.Read()
 	}
 }
 
 func (connMgr *ConnMgr) BroadCast(msg Message) {
-	for _, v := range connMgr.Peers {
-		v.SendMsg(msg)
+	for _, v := range connMgr.ServerPeers {
+		v.Send(msg)
 	}
 }
